@@ -14,8 +14,8 @@ import 'package:url_launcher/url_launcher.dart';
 /// "Tus integraciones" → Credenciales). Usá el Access Token de PRODUCCIÓN para
 /// cobrar de verdad, o el de PRUEBA (TEST) para probar el flujo sin dinero real.
 class MercadoPagoService {
-  /// 🔑 Access Token de Mercado Pago. REEMPLAZAR por el valor real.
-  static const String mpAccessToken = 'TU_ACCESS_TOKEN_DE_MP_AQUI';
+  /// 🔑 Access Token de Mercado Pago (TEST - credenciales de prueba).
+  static const String mpAccessToken = 'TEST-7756136356459997-072719-75d14174933b98bf2751233ef66ffdd1-189971089';
 
   static const String _urlPreferencias =
       'https://api.mercadopago.com/checkout/preferences';
