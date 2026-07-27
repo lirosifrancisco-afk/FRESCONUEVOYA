@@ -22,6 +22,17 @@ dependencies:
   firebase_auth: 6.5.6
   firebase_storage: 13.4.5
 
+  # Autenticación con Google
+  google_sign_in: ^6.2.2
+
+  # Notificaciones push
+  firebase_messaging: ^16.4.3
+  flutter_local_notifications: ^18.0.1
+
+  # HTTP y apertura de URLs (Mercado Pago Checkout Pro)
+  http: ^1.2.2
+  url_launcher: ^6.3.1
+
   # Imágenes
   image_picker: 1.1.2
   path: 1.9.1

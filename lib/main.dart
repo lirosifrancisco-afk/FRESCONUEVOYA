@@ -1,4 +1,5 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -6,6 +7,9 @@ import 'firebase_options.dart';
 
 // AUTH
 import 'auth/screens/auth_gate.dart';
+
+// SERVICIOS
+import 'services/notificaciones_service.dart';
 
 // PROVIDERS
 import 'providers/carrito_provider.dart';
@@ -18,15 +22,18 @@ import 'providers/productos_provider.dart';
 import 'providers/venta_actual_provider.dart';
 import 'providers/ventas_provider.dart';
 
-// PANTALLAS
-import 'screens/home/home_page.dart';
-
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  // Registramos el handler de notificaciones en segundo plano (FCM).
+  FirebaseMessaging.onBackgroundMessage(manejarMensajeEnSegundoPlano);
+
+  // Inicializamos las notificaciones push (permisos, token, foreground).
+  await NotificacionesService().inicializar();
 
   runApp(const FrescoYaApp());
 }
@@ -118,11 +125,9 @@ class FrescoYaApp extends StatelessWidget {
           ),
         ),
 
-        // Pantalla principal
-        home: const HomePage(),
-
-        // Si más adelante querés volver al login:
-        // home: const AuthGate(),
+        // Pantalla principal: el AuthGate decide si mostrar login,
+        // la app del cliente o el panel de administración.
+        home: const AuthGate(),
       ),
     );
   }

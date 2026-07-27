@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../admin/pages/admin_home_page.dart';
 import '../../screens/home.dart';
 import '../services/auth_service.dart';
+import '../widgets/google_sign_in_button.dart';
 import 'register_page.dart';
 
 class LoginPage extends StatefulWidget {
@@ -20,6 +21,7 @@ class _LoginPageState extends State<LoginPage> {
 
   bool ocultarPassword = true;
   bool cargando = false;
+  bool cargandoGoogle = false;
 
   @override
   void dispose() {
@@ -81,6 +83,51 @@ class _LoginPageState extends State<LoginPage> {
       if (mounted) {
         setState(() {
           cargando = false;
+        });
+      }
+    }
+  }
+
+  Future<void> iniciarSesionGoogle() async {
+    try {
+      setState(() {
+        cargandoGoogle = true;
+      });
+
+      await _authService.signInWithGoogle();
+
+      final esAdmin = await _authService.esAdministrador();
+
+      if (!mounted) return;
+
+      if (esAdmin) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const AdminHomePage(),
+          ),
+        );
+      } else {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const HomePage(),
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Error al iniciar con Google: $e"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          cargandoGoogle = false;
         });
       }
     }
@@ -153,6 +200,23 @@ class _LoginPageState extends State<LoginPage> {
                   )
                       : const Text("Iniciar sesión"),
                 ),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: const [
+                  Expanded(child: Divider()),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 12),
+                    child: Text("o"),
+                  ),
+                  Expanded(child: Divider()),
+                ],
+              ),
+              const SizedBox(height: 20),
+              GoogleSignInButton(
+                cargando: cargandoGoogle,
+                onPressed:
+                    (cargando || cargandoGoogle) ? null : iniciarSesionGoogle,
               ),
               const SizedBox(height: 20),
               TextButton(
