@@ -17,6 +17,7 @@ class PedidosService {
     required String metodoPago,
     double? latitud,
     double? longitud,
+    String estado = "Pendiente",
   })async {
     final usuario = _auth.currentUser;
 
@@ -33,8 +34,9 @@ class PedidosService {
       "latitud": latitud,
       "longitud": longitud,
       "metodoPago": metodoPago,
+      "uid": usuario.uid,
       "fecha": FieldValue.serverTimestamp(),
-      "estado": "Pendiente",
+      "estado": estado,
       "total": total,
       "cantidadProductos": productos.length,
       "productos": productos

@@ -1,8 +1,10 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/carrito_provider.dart';
 import '../../services/flete_service.dart';
+import '../../services/mercadopago_service.dart';
 import '../../services/pedidos_service.dart';
 import '../../shared/theme/app_colors.dart';
 import 'pedido_exitoso_page.dart';
@@ -161,17 +163,59 @@ class ResumenPage extends StatelessWidget {
                   icon: const Icon(Icons.check),
                   label: const Text("Confirmar"),
                   onPressed: () async {
+                    final metodoPago =
+                        datos["metodoPago"] as String? ?? "efectivo";
+                    final esMercadoPago = metodoPago == "mercadopago";
+
                     try {
+                      // Para Mercado Pago el pedido queda como "pendiente_pago"
+                      // hasta que se confirme el cobro; para el resto queda
+                      // como "Pendiente" de preparación.
                       final id = await PedidosService().guardarPedido(
                         productos: carrito.productos,
-                        total: totalFinal, // Guardamos el total real con flete incluido
+                        total: totalFinal, // Total real con flete incluido
                         nombre: datos["nombre"] ?? "",
                         telefono: datos["telefono"] ?? "",
                         direccion: datos["direccion"] ?? "",
-                        metodoPago: datos["metodoPago"] ?? "efectivo",
+                        metodoPago: metodoPago,
                         latitud: datos["latitud"],
                         longitud: datos["longitud"],
+                        estado:
+                            esMercadoPago ? "pendiente_pago" : "Pendiente",
                       );
+
+                      if (esMercadoPago) {
+                        // Construimos los items para Mercado Pago.
+                        final items = <Map<String, dynamic>>[
+                          for (final p in carrito.productos)
+                            {
+                              "title": p.nombre,
+                              "quantity": p.cantidad,
+                              "unit_price": p.precio,
+                            },
+                        ];
+
+                        // Sumamos el costo de envío como un item más.
+                        if (costoFlete > 0) {
+                          items.add({
+                            "title": "Costo de envío",
+                            "quantity": 1,
+                            "unit_price": costoFlete,
+                          });
+                        }
+
+                        final email =
+                            FirebaseAuth.instance.currentUser?.email ?? "";
+
+                        final mp = MercadoPagoService();
+                        final initPoint = await mp.crearPreferencia(
+                          items: items,
+                          externalReference: id,
+                          payerEmail: email,
+                        );
+
+                        await mp.abrirCheckout(initPoint);
+                      }
 
                       carrito.vaciarCarrito();
 
