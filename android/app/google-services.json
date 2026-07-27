@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1037166961093",
+    "project_id": "frescoya-mendoza",
+    "storage_bucket": "frescoya-mendoza.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1037166961093:android:cbbd74149ddc12e85babac",
+        "android_client_info": {
+          "package_name": "com.frescoya.frescoya"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDwMqyCiqR8nnyTMZYu0FAIABO2OF1rVhg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

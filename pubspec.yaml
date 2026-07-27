@@ -1,0 +1,59 @@
+name: frescoya
+description: "Compras online de frutas y verduras"
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.8.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: 1.0.9
+
+  # Estado
+  provider: 6.1.5
+
+  # Firebase
+  firebase_core: 4.12.1
+  cloud_firestore: 6.7.1
+  firebase_auth: 6.5.6
+  firebase_storage: 13.4.5
+
+  # Imágenes
+  image_picker: 1.1.2
+  path: 1.9.1
+  path_provider: 2.1.6
+  uuid: 4.6.0
+
+  # Fechas
+  intl: 0.20.3
+
+  # Google Maps
+  google_maps_flutter: 2.12.3
+  geolocator: 14.0.2
+  geocoding: 4.0.0
+  permission_handler: 12.0.3
+
+  # Reportes
+  pdf: 3.12.0
+  printing: 5.14.3
+  excel: 4.0.6
+  share_plus: 11.1.0
+
+  # Gráficos
+  fl_chart: 1.2.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: 6.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
