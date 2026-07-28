@@ -17,47 +17,62 @@ class PedidosService {
     required String metodoPago,
     double? latitud,
     double? longitud,
-    String estado = "Pendiente",
-  })async {
+    double costoFlete = 0,
+    double distanciaKm = 0,
+    String tipoEntrega = 'delivery',
+    String referencia = '',
+    String estado = 'Pendiente',
+  }) async {
     final usuario = _auth.currentUser;
 
     if (usuario == null) {
-      throw Exception("No hay un usuario autenticado.");
-
+      throw Exception('No hay un usuario autenticado.');
     }
 
+    final subtotal = productos.fold<double>(
+      0,
+      (acumulado, p) => acumulado + p.total,
+    );
+
     final pedido = {
-      "nombre": nombre,
-      "telefono": telefono,
-      "email": usuario.email ?? "",
-      "direccion": direccion,
-      "latitud": latitud,
-      "longitud": longitud,
-      "metodoPago": metodoPago,
-      "uid": usuario.uid,
-      "fecha": FieldValue.serverTimestamp(),
-      "estado": estado,
-      "total": total,
-      "cantidadProductos": productos.length,
-      "productos": productos
+      'nombre': nombre,
+      'telefono': telefono,
+      'email': usuario.email ?? '',
+      'direccion': direccion,
+      'referencia': referencia,
+      'tipoEntrega': tipoEntrega,
+      'latitud': latitud,
+      'longitud': longitud,
+      'distanciaKm': distanciaKm,
+      'costoFlete': costoFlete,
+      'metodoPago': metodoPago,
+      'uid': usuario.uid,
+      'fecha': FieldValue.serverTimestamp(),
+      'estado': estado,
+      'subtotal': subtotal,
+      'total': total,
+      'cantidadProductos': productos.length,
+      'productos': productos
           .map(
             (p) => {
-          "id": p.id,
-          "nombre": p.nombre,
-          "cantidad": p.cantidad,
-          "precio": p.precio,
-          "unidad": p.unidad,
-          "categoria": p.categoria,
-          "imagen": p.imagen,
-          "subtotal": p.total,
-        },
-      )
+              'id': p.id,
+              'nombre': p.nombre,
+              'cantidad': p.cantidad,
+              'precio': p.precio,
+              'unidad': p.unidad,
+              'unidadMedida': p.unidadMedida,
+              'cantidadPorUnidad': p.cantidadPorUnidad,
+              'categoria': p.categoria,
+              'imagen': p.imagen,
+              'subtotal': p.total,
+            },
+          )
           .toList(),
     };
 
-    final doc = await _db.collection("pedidos").add(pedido);
+    final doc = await _db.collection('pedidos').add(pedido);
 
-    debugPrint("✅ Pedido guardado: ${doc.id}");
+    debugPrint('✅ Pedido guardado: ${doc.id}');
 
     return doc.id;
   }

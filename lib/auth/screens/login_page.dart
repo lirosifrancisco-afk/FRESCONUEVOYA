@@ -75,7 +75,7 @@ class _LoginPageState extends State<LoginPage> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text("Error: $e"),
+          content: Text(_authService.obtenerMensajeError(e)),
           backgroundColor: Colors.red,
         ),
       );
@@ -120,7 +120,7 @@ class _LoginPageState extends State<LoginPage> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text("Error al iniciar con Google: $e"),
+          content: Text(_authService.obtenerMensajeError(e, paraGoogle: true)),
           backgroundColor: Colors.red,
         ),
       );

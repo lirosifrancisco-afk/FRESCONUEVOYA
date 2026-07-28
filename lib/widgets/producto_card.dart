@@ -108,6 +108,13 @@ class ProductoCard extends StatelessWidget {
                         fontSize: 24,
                       ),
                     ),
+                    Text(
+                      "por ${producto.cantidadPorUnidad} ${producto.unidadMedida}",
+                      style: TextStyle(
+                        color: Colors.grey.shade700,
+                        fontSize: 12,
+                      ),
+                    ),
                     const SizedBox(height: 8),
                     Row(
                       children: [

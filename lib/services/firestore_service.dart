@@ -35,16 +35,24 @@ class FirestoreService {
     required double precio,
     required int stock,
     required String unidad,
+    String? unidadMedida,
+    double cantidadPorUnidad = 1,
     required String categoria,
     String imagen = "",
     bool activo = true,
     bool destacado = false,
   }) async {
+    final unidadNormalizada = unidad.trim().toLowerCase();
+    final unidadMedidaNormalizada =
+        (unidadMedida ?? unidad).trim().toLowerCase();
+
     await _db.collection("productos").add({
       "nombre": nombre.trim(),
       "precio": precio,
       "stock": stock,
-      "unidad": unidad,
+      "unidad": unidadNormalizada,
+      "unidadMedida": unidadMedidaNormalizada,
+      "cantidadPorUnidad": cantidadPorUnidad,
       "categoria": categoria,
       "imagen": imagen,
       "activo": activo,
@@ -60,16 +68,24 @@ class FirestoreService {
     required double precio,
     required int stock,
     required String unidad,
+    String? unidadMedida,
+    double cantidadPorUnidad = 1,
     required String categoria,
     String imagen = "",
     bool activo = true,
     bool destacado = false,
   }) async {
+    final unidadNormalizada = unidad.trim().toLowerCase();
+    final unidadMedidaNormalizada =
+        (unidadMedida ?? unidad).trim().toLowerCase();
+
     await _db.collection("productos").doc(id).update({
       "nombre": nombre.trim(),
       "precio": precio,
       "stock": stock,
-      "unidad": unidad,
+      "unidad": unidadNormalizada,
+      "unidadMedida": unidadMedidaNormalizada,
+      "cantidadPorUnidad": cantidadPorUnidad,
       "categoria": categoria,
       "imagen": imagen,
       "activo": activo,

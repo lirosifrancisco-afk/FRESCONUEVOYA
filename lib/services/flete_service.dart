@@ -1,36 +1,43 @@
 import 'dart:math';
 
 class FleteService {
-  // Coordenadas de tu local o depósito central en el Gran Mendoza (ej: Centro de Mendoza)
+  // Coordenadas del local en Mendoza (punto de salida de entregas)
   static const double localLat = -32.889458;
   static const double localLng = -68.845839;
 
-  // Calcula la distancia en kilómetros usando la fórmula de Haversine
-  static double calcularDistancia(double lat2, double lng2) {
-    const p = 0.017453292519943295; // Math.pi / 180
+  // Tarifa configurable
+  static const double costoBase = 500.0;
+  static const double costoPorKm = 100.0;
+
+  /// Calcula la distancia en kilómetros usando fórmula de Haversine.
+  static double calcularDistanciaKm(double lat2, double lng2) {
+    const p = 0.017453292519943295;
     final c = cos;
     final a = 0.5 -
         c((lat2 - localLat) * p) / 2 +
         c(localLat * p) * c(lat2 * p) * (1 - c((lng2 - localLng) * p)) / 2;
-    return 12742 * asin(sqrt(a)); // 2 * R; R = 6371 km
+
+    final distancia = 12742 * asin(sqrt(a));
+    return distancia;
   }
 
-  // Calcula el costo del flete según los kilómetros de distancia
+  /// Distancia redondeada a 2 decimales para mostrar en UI.
+  static double distanciaRedondeada(double? lat, double? lng) {
+    if (lat == null || lng == null) return 0;
+    final distancia = calcularDistanciaKm(lat, lng);
+    return (distancia * 100).roundToDouble() / 100;
+  }
+
+  /// Calcula el costo de flete.
+  /// Fórmula: $500 base + $100 por km.
   static double calcularCostoFlete(double? lat, double? lng) {
-    if (lat == null || lng == null) return 1500.0; // Flete base por defecto si no eligió mapa
+    if (lat == null || lng == null) {
+      return costoBase;
+    }
 
-    double distanciaKm = calcularDistancia(lat, lng);
+    final distanciaKm = calcularDistanciaKm(lat, lng);
+    final costo = costoBase + (distanciaKm * costoPorKm);
 
-    // Ejemplo de tarifa para el Gran Mendoza:
-    // Flete base de $1000 hasta 3 km, y luego un adicional por km extra
-    double costoBase = 1000.0;
-    double costoPorKm = 300.0;
-
-    double fleteTotal = costoBase + (distanciaKm * costoPorKm);
-
-    // Establecemos un flete mínimo
-    if (fleteTotal < 1200) return 1200.0;
-
-    return fleteTotal.roundToDouble();
+    return costo.roundToDouble();
   }
 }

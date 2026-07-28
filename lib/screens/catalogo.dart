@@ -105,7 +105,9 @@ cantidad: 1,
 stock: (data["stock"] as num?)
 ?.toInt() ??
 0,
-unidad: data["unidad"] ?? "",
+unidad: (data["unidad"] ?? "unidad").toString(),
+unidadMedida: (data["unidadMedida"] ?? data["unidad"] ?? "unidad").toString(),
+cantidadPorUnidad: (data["cantidadPorUnidad"] as num?)?.toDouble() ?? 1,
 categoria:
 data["categoria"] ?? "",
 imagen: data["imagen"] ?? "",
@@ -160,7 +162,7 @@ imagen: data["imagen"] ?? "",
       children: [
         const SizedBox(height: 5),
         Text(
-          "\$ ${producto.precio.toStringAsFixed(0)} / ${producto.unidad}",
+          "\$ ${producto.precio.toStringAsFixed(0)} / ${producto.cantidadPorUnidad} ${producto.unidadMedida}",
         ),
         Text("Stock: ${producto.stock}"),
         Text("Categoría: ${producto.categoria}"),

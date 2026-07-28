@@ -73,7 +73,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text("Error: $e"),
+          content: Text(_authService.obtenerMensajeError(e)),
           backgroundColor: Colors.red,
         ),
       );
@@ -118,7 +118,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text("Error al registrarse con Google: $e"),
+          content: Text(_authService.obtenerMensajeError(e, paraGoogle: true)),
           backgroundColor: Colors.red,
         ),
       );

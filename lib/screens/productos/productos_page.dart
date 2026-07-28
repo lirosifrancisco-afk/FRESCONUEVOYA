@@ -95,9 +95,9 @@ class _ProductosPageState extends State<ProductosPage> {
                         Text(
                             "Categoría: ${producto.categoria}"),
                         Text(
-                            "Stock: ${producto.stock} ${producto.unidad}"),
+                            "Stock: ${producto.stock} ${producto.unidadMedida}"),
                         Text(
-                            "Precio: \$${producto.precio.toStringAsFixed(0)}"),
+                            "Precio: \$${producto.precio.toStringAsFixed(0)} por ${producto.cantidadPorUnidad} ${producto.unidadMedida}"),
                       ],
                     ),
                     trailing: Row(

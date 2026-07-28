@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
@@ -5,31 +6,14 @@ import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 
 /// Servicio de integración con Mercado Pago Checkout Pro.
-///
-/// Crea una "preferencia" de pago mediante la API de Mercado Pago y abre el
-/// checkout en el navegador usando `url_launcher`.
-///
-/// IMPORTANTE: reemplazá el valor de [mpAccessToken] por tu Access Token real
-/// de Mercado Pago (lo obtenés en https://www.mercadopago.com.ar/developers →
-/// "Tus integraciones" → Credenciales). Usá el Access Token de PRODUCCIÓN para
-/// cobrar de verdad, o el de PRUEBA (TEST) para probar el flujo sin dinero real.
 class MercadoPagoService {
   /// 🔑 Access Token de Mercado Pago (TEST - credenciales de prueba).
-  static const String mpAccessToken = 'TEST-7756136356459997-072719-75d14174933b98bf2751233ef66ffdd1-189971089';
+  static const String mpAccessToken =
+      'TEST-7756136356459997-072719-75d14174933b98bf2751233ef66ffdd1-189971089';
 
   static const String _urlPreferencias =
       'https://api.mercadopago.com/checkout/preferences';
 
-  /// Crea una preferencia de pago en Mercado Pago y devuelve el `init_point`
-  /// (URL del checkout) que hay que abrir para que el usuario pague.
-  ///
-  /// [items] es una lista de mapas con la forma:
-  /// `{ "title": "Manzana", "quantity": 2, "unit_price": 350.0 }`
-  ///
-  /// [externalReference] suele ser el ID del pedido en Firestore, para poder
-  /// relacionar el pago con el pedido más adelante.
-  ///
-  /// [payerEmail] es el email del comprador.
   Future<String> crearPreferencia({
     required List<Map<String, dynamic>> items,
     required String externalReference,
@@ -37,64 +21,101 @@ class MercadoPagoService {
   }) async {
     if (mpAccessToken == 'TU_ACCESS_TOKEN_DE_MP_AQUI') {
       throw Exception(
-        "Falta configurar el Access Token de Mercado Pago en "
-        "lib/services/mercadopago_service.dart (constante mpAccessToken).",
+        'Falta configurar el Access Token de Mercado Pago en '
+        'lib/services/mercadopago_service.dart.',
       );
     }
 
+    if (!mpAccessToken.startsWith('TEST-') &&
+        !mpAccessToken.startsWith('APP_USR-')) {
+      throw Exception(
+        'El Access Token de Mercado Pago no tiene un formato válido.',
+      );
+    }
+
+    final itemsNormalizados = items
+        .where((item) => (item['unit_price'] as num?) != null)
+        .map(
+          (item) => {
+            'title': (item['title'] ?? 'Producto').toString(),
+            'quantity': (item['quantity'] as num?)?.toInt() ?? 1,
+            'unit_price': ((item['unit_price'] as num?) ?? 0).toDouble(),
+            'currency_id': 'ARS',
+          },
+        )
+        .where((item) => (item['unit_price'] as double) > 0)
+        .toList();
+
+    if (itemsNormalizados.isEmpty) {
+      throw Exception('No hay ítems válidos para enviar a Mercado Pago.');
+    }
+
     final body = {
-      "items": items
-          .map(
-            (item) => {
-              "title": item["title"],
-              "quantity": item["quantity"],
-              "unit_price": item["unit_price"],
-              "currency_id": "ARS",
-            },
-          )
-          .toList(),
-      "external_reference": externalReference,
-      "payer": {
-        "email": payerEmail,
+      'items': itemsNormalizados,
+      'external_reference': externalReference,
+      'payer': {
+        'email': payerEmail.trim().isNotEmpty
+            ? payerEmail.trim()
+            : 'comprador@frescoya.local',
       },
-      "back_urls": {
-        "success": "https://frescoya.com/pago/exito",
-        "failure": "https://frescoya.com/pago/error",
-        "pending": "https://frescoya.com/pago/pendiente",
+      'back_urls': {
+        'success': 'https://frescoya.com/pago/exito',
+        'failure': 'https://frescoya.com/pago/error',
+        'pending': 'https://frescoya.com/pago/pendiente',
       },
-      "auto_return": "approved",
+      'auto_return': 'approved',
     };
 
-    final respuesta = await http.post(
-      Uri.parse(_urlPreferencias),
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer $mpAccessToken",
-      },
-      body: jsonEncode(body),
-    );
+    try {
+      final respuesta = await http
+          .post(
+            Uri.parse(_urlPreferencias),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $mpAccessToken',
+            },
+            body: jsonEncode(body),
+          )
+          .timeout(const Duration(seconds: 25));
 
-    if (respuesta.statusCode == 200 || respuesta.statusCode == 201) {
-      final datos = jsonDecode(respuesta.body) as Map<String, dynamic>;
-      final initPoint = datos["init_point"] as String?;
+      final Map<String, dynamic>? datos = _intentarParsearJson(respuesta.body);
 
-      if (initPoint == null || initPoint.isEmpty) {
+      if (respuesta.statusCode == 200 || respuesta.statusCode == 201) {
+        final initPoint = (datos?['init_point'] ?? datos?['sandbox_init_point'])
+            ?.toString();
+
+        if (initPoint == null || initPoint.isEmpty) {
+          throw Exception('Mercado Pago no devolvió una URL de checkout válida.');
+        }
+
+        debugPrint('✅ Preferencia MP creada: ${datos?['id']}');
+        return initPoint;
+      }
+
+      debugPrint('❌ Error MP (${respuesta.statusCode}): ${respuesta.body}');
+
+      if (respuesta.statusCode == 401 || respuesta.statusCode == 403) {
         throw Exception(
-          "Mercado Pago no devolvió un init_point válido.",
+          'Token de Mercado Pago inválido o sin permisos. Revisá tus credenciales.',
         );
       }
 
-      debugPrint("✅ Preferencia MP creada: ${datos["id"]}");
-      return initPoint;
-    } else {
-      debugPrint("❌ Error MP (${respuesta.statusCode}): ${respuesta.body}");
+      final mensajeApi = _extraerMensajeMercadoPago(datos);
+      if (mensajeApi != null) {
+        throw Exception('Mercado Pago respondió: $mensajeApi');
+      }
+
       throw Exception(
-        "Error al crear la preferencia de pago (${respuesta.statusCode}).",
+        'No se pudo crear la preferencia de pago '
+        '(código ${respuesta.statusCode}).',
+      );
+    } on TimeoutException {
+      throw Exception(
+        'Mercado Pago tardó demasiado en responder. Intentá nuevamente.',
       );
     }
   }
 
-  /// Abre la URL del checkout de Mercado Pago en el navegador externo.
   Future<void> abrirCheckout(String initPoint) async {
     final uri = Uri.parse(initPoint);
 
@@ -104,7 +125,40 @@ class MercadoPagoService {
     );
 
     if (!abierto) {
-      throw Exception("No se pudo abrir el checkout de Mercado Pago.");
+      throw Exception(
+        'No se pudo abrir el checkout de Mercado Pago en el navegador.',
+      );
     }
+  }
+
+  Map<String, dynamic>? _intentarParsearJson(String body) {
+    try {
+      final json = jsonDecode(body);
+      if (json is Map<String, dynamic>) {
+        return json;
+      }
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  String? _extraerMensajeMercadoPago(Map<String, dynamic>? datos) {
+    if (datos == null) return null;
+
+    final mensaje = datos['message']?.toString();
+    if (mensaje != null && mensaje.isNotEmpty) return mensaje;
+
+    final causa = datos['cause'];
+    if (causa is List && causa.isNotEmpty) {
+      final primerError = causa.first;
+      if (primerError is Map<String, dynamic>) {
+        final descripcion = primerError['description']?.toString();
+        if (descripcion != null && descripcion.isNotEmpty) return descripcion;
+      }
+      return causa.first.toString();
+    }
+
+    return null;
   }
 }

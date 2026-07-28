@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../services/flete_service.dart';
 import '../../shared/theme/app_text_styles.dart';
 import '../../shared/widgets/app_button.dart';
 import '../mapa/mapa_page.dart';
@@ -28,8 +29,8 @@ class _DireccionPageState extends State<DireccionPage> {
 
   bool get _puedeAvanzar =>
       _nombreController.text.trim().isNotEmpty &&
-          _telefonoController.text.trim().isNotEmpty &&
-          _direccionController.text.trim().isNotEmpty;
+      _telefonoController.text.trim().isNotEmpty &&
+      _direccionController.text.trim().isNotEmpty;
 
   Future<void> _abrirMapa() async {
     final resultado = await Navigator.push(
@@ -58,6 +59,9 @@ class _DireccionPageState extends State<DireccionPage> {
 
   @override
   Widget build(BuildContext context) {
+    final distanciaKm = FleteService.distanciaRedondeada(latitud, longitud);
+    final costoFlete = FleteService.calcularCostoFlete(latitud, longitud);
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -127,20 +131,49 @@ class _DireccionPageState extends State<DireccionPage> {
           if (latitud != null && longitud != null)
             Padding(
               padding: const EdgeInsets.only(top: 12),
-              child: Row(
+              child: Column(
                 children: [
-                  const Icon(
-                    Icons.location_on,
-                    color: Colors.green,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      "Ubicación seleccionada correctamente",
-                      style: TextStyle(
-                        color: Colors.green.shade700,
-                        fontWeight: FontWeight.w600,
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.location_on,
+                        color: Colors.green,
                       ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          "Ubicación seleccionada correctamente",
+                          style: TextStyle(
+                            color: Colors.green.shade700,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withOpacity(0.08),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.green.withOpacity(0.2)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Estimación de envío",
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            color: Colors.green.shade800,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text("Distancia aproximada: ${distanciaKm.toStringAsFixed(2)} km"),
+                        Text("Costo de flete: \$${costoFlete.toStringAsFixed(0)}"),
+                      ],
                     ),
                   ),
                 ],
@@ -155,17 +188,16 @@ class _DireccionPageState extends State<DireccionPage> {
               texto: "Continuar",
               onPressed: _puedeAvanzar
                   ? () {
-                widget.datos["nombre"] =
-                    _nombreController.text.trim();
-                widget.datos["telefono"] =
-                    _telefonoController.text.trim();
-                widget.datos["direccion"] =
-                    _direccionController.text.trim();
-                widget.datos["latitud"] = latitud;
-                widget.datos["longitud"] = longitud;
+                      widget.datos["nombre"] = _nombreController.text.trim();
+                      widget.datos["telefono"] = _telefonoController.text.trim();
+                      widget.datos["direccion"] = _direccionController.text.trim();
+                      widget.datos["latitud"] = latitud;
+                      widget.datos["longitud"] = longitud;
+                      widget.datos["distanciaKm"] = distanciaKm;
+                      widget.datos["costoFlete"] = costoFlete;
 
-                widget.onNext();
-              }
+                      widget.onNext();
+                    }
                   : null,
             ),
           ),
