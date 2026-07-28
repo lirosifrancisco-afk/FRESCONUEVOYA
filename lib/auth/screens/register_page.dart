@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../../admin/pages/admin_home_page.dart';
+import '../../screens/home.dart';
 import '../services/auth_service.dart';
+import '../widgets/google_sign_in_button.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -19,6 +22,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
   bool ocultarPassword = true;
   bool cargando = false;
+  bool cargandoGoogle = false;
 
   @override
   void dispose() {
@@ -77,6 +81,51 @@ class _RegisterPageState extends State<RegisterPage> {
       if (mounted) {
         setState(() {
           cargando = false;
+        });
+      }
+    }
+  }
+
+  Future<void> registrarConGoogle() async {
+    try {
+      setState(() {
+        cargandoGoogle = true;
+      });
+
+      await _authService.signInWithGoogle();
+
+      final esAdmin = await _authService.esAdministrador();
+
+      if (!mounted) return;
+
+      if (esAdmin) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const AdminHomePage(),
+          ),
+        );
+      } else {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const HomePage(),
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Error al registrarse con Google: $e"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          cargandoGoogle = false;
         });
       }
     }
@@ -173,6 +222,28 @@ class _RegisterPageState extends State<RegisterPage> {
                   )
                       : const Text("Crear cuenta"),
                 ),
+              ),
+
+              const SizedBox(height: 20),
+
+              Row(
+                children: const [
+                  Expanded(child: Divider()),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 12),
+                    child: Text("o"),
+                  ),
+                  Expanded(child: Divider()),
+                ],
+              ),
+
+              const SizedBox(height: 20),
+
+              GoogleSignInButton(
+                texto: "Registrarse con Google",
+                cargando: cargandoGoogle,
+                onPressed:
+                    (cargando || cargandoGoogle) ? null : registrarConGoogle,
               ),
             ],
           ),
