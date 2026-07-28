@@ -4,6 +4,13 @@ import '../models/detalle_venta.dart';
 import '../models/producto.dart';
 import '../services/ventas_service.dart';
 
+enum MetodoPago {
+  efectivo,
+  transferencia,
+  mercadoPago,
+  tarjeta,
+}
+
 class VentaActualProvider extends ChangeNotifier {
   final VentasService _ventasService = VentasService();
 
@@ -11,15 +18,41 @@ class VentaActualProvider extends ChangeNotifier {
 
   String cliente = "";
 
+  MetodoPago metodoPago = MetodoPago.efectivo;
+
+  String observaciones = "";
+
+  double descuento = 0;
+
   List<DetalleVenta> get items => List.unmodifiable(_items);
 
   bool get estaVacia => _items.isEmpty;
 
-  double get totalGeneral =>
+  double get subtotal =>
       _items.fold(0.0, (total, item) => total + item.total);
+
+  double get totalGeneral {
+    final total = subtotal - descuento;
+    return total < 0 ? 0 : total;
+  }
 
   void cambiarCliente(String nombre) {
     cliente = nombre;
+    notifyListeners();
+  }
+
+  void cambiarMetodoPago(MetodoPago metodo) {
+    metodoPago = metodo;
+    notifyListeners();
+  }
+
+  void cambiarObservaciones(String texto) {
+    observaciones = texto;
+    notifyListeners();
+  }
+
+  void cambiarDescuento(double valor) {
+    descuento = valor;
     notifyListeners();
   }
 
@@ -69,6 +102,10 @@ class VentaActualProvider extends ChangeNotifier {
   void limpiarVenta() {
     _items.clear();
     cliente = "";
+    metodoPago = MetodoPago.efectivo;
+    observaciones = "";
+    descuento = 0;
+
     notifyListeners();
   }
 }

@@ -3,35 +3,36 @@ class Cliente {
   final String nombre;
   final String telefono;
   final String direccion;
-  final bool activo;
+  final String observaciones;
+  final double saldo;
 
   Cliente({
     required this.id,
     required this.nombre,
     required this.telefono,
     required this.direccion,
-    this.activo = true,
+    required this.observaciones,
+    required this.saldo,
   });
+
+  factory Cliente.fromMap(String id, Map<String, dynamic> map) {
+    return Cliente(
+      id: id,
+      nombre: map['nombre'] ?? '',
+      telefono: map['telefono'] ?? '',
+      direccion: map['direccion'] ?? '',
+      observaciones: map['observaciones'] ?? '',
+      saldo: (map['saldo'] ?? 0).toDouble(),
+    );
+  }
 
   Map<String, dynamic> toMap() {
     return {
-      "nombre": nombre,
-      "telefono": telefono,
-      "direccion": direccion,
-      "activo": activo,
+      'nombre': nombre,
+      'telefono': telefono,
+      'direccion': direccion,
+      'observaciones': observaciones,
+      'saldo': saldo,
     };
-  }
-
-  factory Cliente.fromFirestore(
-      String id,
-      Map<String, dynamic> data,
-      ) {
-    return Cliente(
-      id: id,
-      nombre: data["nombre"] ?? "",
-      telefono: data["telefono"] ?? "",
-      direccion: data["direccion"] ?? "",
-      activo: data["activo"] ?? true,
-    );
   }
 }

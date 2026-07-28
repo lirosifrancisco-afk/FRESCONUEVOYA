@@ -7,6 +7,9 @@ import 'firebase_options.dart';
 // AUTH
 import 'auth/screens/auth_gate.dart';
 
+// ADMIN
+import 'admin/admin_app.dart';
+
 // PROVIDERS
 import 'providers/carrito_provider.dart';
 import 'providers/categorias_provider.dart';
@@ -17,9 +20,6 @@ import 'providers/pedidos_provider.dart';
 import 'providers/productos_provider.dart';
 import 'providers/venta_actual_provider.dart';
 import 'providers/ventas_provider.dart';
-
-// PANTALLAS
-import 'screens/home/home_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -53,7 +53,6 @@ class FrescoYaApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (_) => PedidosProvider(),
         ),
-
         ChangeNotifierProvider(
           create: (_) {
             final provider = VentasProvider();
@@ -61,15 +60,12 @@ class FrescoYaApp extends StatelessWidget {
             return provider;
           },
         ),
-
         ChangeNotifierProvider(
           create: (_) => VentaActualProvider(),
         ),
-
         ChangeNotifierProvider(
           create: (_) => CompraActualProvider(),
         ),
-
         ChangeNotifierProvider(
           create: (_) => ComprasProvider(),
         ),
@@ -88,8 +84,7 @@ class FrescoYaApp extends StatelessWidget {
             centerTitle: true,
           ),
 
-          floatingActionButtonTheme:
-          const FloatingActionButtonThemeData(
+          floatingActionButtonTheme: const FloatingActionButtonThemeData(
             backgroundColor: Colors.green,
             foregroundColor: Colors.white,
           ),
@@ -118,10 +113,10 @@ class FrescoYaApp extends StatelessWidget {
           ),
         ),
 
-        // Pantalla principal
-        home: const HomePage(),
+        // Inicio de la aplicación (Administrador)
+        home: const AdminApp(),
 
-        // Si más adelante querés volver al login:
+        // Cuando implementemos el login por roles:
         // home: const AuthGate(),
       ),
     );

@@ -1,66 +1,62 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../models/cliente.dart';
+import '../services/clientes_service.dart';
 
 class ClientesProvider extends ChangeNotifier {
-  final List<Cliente> _clientes = [
-    Cliente(
-      id: "1",
-      nombre: "Consumidor Final",
-      telefono: "",
-      direccion: "",
-    ),
-  ];
+  final ClientesService _service = ClientesService();
 
-  bool get cargando => false;
+  List<Cliente> _clientes = [];
+  List<Cliente> get clientes => _clientes;
 
-  List<Cliente> get clientes => List.unmodifiable(_clientes);
+  bool _cargando = true;
+  bool get cargando => _cargando;
+
+  StreamSubscription<List<Cliente>>? _subscription;
+
+  ClientesProvider() {
+    cargarClientes();
+  }
+
+  void cargarClientes() {
+    _subscription?.cancel();
+
+    _subscription = _service.obtenerClientes().listen((lista) {
+      _clientes = lista;
+      _cargando = false;
+      notifyListeners();
+    });
+  }
 
   List<Cliente> buscar(String texto) {
-    if (texto.trim().isEmpty) return clientes;
+    if (texto.trim().isEmpty) {
+      return _clientes;
+    }
 
-    return clientes.where((c) {
-      return c.nombre.toLowerCase().contains(texto.toLowerCase()) ||
-          c.telefono.toLowerCase().contains(texto.toLowerCase());
+    return _clientes.where((cliente) {
+      return cliente.nombre
+          .toLowerCase()
+          .contains(texto.toLowerCase());
     }).toList();
   }
 
-  Future<void> agregarCliente({
-    required String nombre,
-    required String telefono,
-    required String direccion,
-  }) async {
-    _clientes.add(
-      Cliente(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        nombre: nombre,
-        telefono: telefono,
-        direccion: direccion,
-      ),
-    );
-
-    notifyListeners();
+  Future<void> agregarCliente(Cliente cliente) async {
+    await _service.agregarCliente(cliente);
   }
 
-  Future<void> editarCliente(Cliente cliente) async {
-    final index = _clientes.indexWhere((c) => c.id == cliente.id);
-
-    if (index != -1) {
-      _clientes[index] = cliente;
-      notifyListeners();
-    }
+  Future<void> actualizarCliente(Cliente cliente) async {
+    await _service.actualizarCliente(cliente);
   }
 
   Future<void> eliminarCliente(String id) async {
-    _clientes.removeWhere((c) => c.id == id);
-    notifyListeners();
+    await _service.eliminarCliente(id);
   }
 
-  Cliente? obtenerPorId(String id) {
-    try {
-      return _clientes.firstWhere((c) => c.id == id);
-    } catch (_) {
-      return null;
-    }
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
   }
 }
