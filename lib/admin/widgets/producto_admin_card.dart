@@ -93,7 +93,7 @@ class ProductoAdminCard extends StatelessWidget {
                   const SizedBox(height: 8),
 
                   Text(
-                    "\$${producto.precio.toStringAsFixed(2)}",
+                    "\$${producto.precio.toStringAsFixed(2)} / ${producto.cantidadPorUnidad} ${producto.unidadMedida}",
                     style: const TextStyle(
                       fontSize: 17,
                       fontWeight: FontWeight.bold,

@@ -87,12 +87,16 @@ class ProductosProvider extends ChangeNotifier {
     required String unidad,
     required String categoria,
     String imagen = "",
+    String? unidadMedida,
+    double cantidadPorUnidad = 1,
   }) async {
     await _firestoreService.agregarProducto(
       nombre: nombre,
       precio: precio,
       stock: stock,
       unidad: unidad,
+      unidadMedida: unidadMedida,
+      cantidadPorUnidad: cantidadPorUnidad,
       categoria: categoria,
       imagen: imagen,
     );
@@ -106,6 +110,8 @@ class ProductosProvider extends ChangeNotifier {
     required String unidad,
     required String categoria,
     String imagen = "",
+    String? unidadMedida,
+    double cantidadPorUnidad = 1,
   }) async {
     await _firestoreService.editarProducto(
       id: id,
@@ -113,6 +119,8 @@ class ProductosProvider extends ChangeNotifier {
       precio: precio,
       stock: stock,
       unidad: unidad,
+      unidadMedida: unidadMedida,
+      cantidadPorUnidad: cantidadPorUnidad,
       categoria: categoria,
       imagen: imagen,
     );

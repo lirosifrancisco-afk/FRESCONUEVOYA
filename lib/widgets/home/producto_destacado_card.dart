@@ -54,7 +54,7 @@ class ProductoDestacadoCard extends StatelessWidget {
                   const SizedBox(height: 6),
 
                   Text(
-                    producto.unidad,
+                    "${producto.cantidadPorUnidad} ${producto.unidadMedida}",
                     style: TextStyle(
                       color: Colors.grey.shade600,
                     ),

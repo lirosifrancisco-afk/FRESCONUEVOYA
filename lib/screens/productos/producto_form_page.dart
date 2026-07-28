@@ -22,34 +22,40 @@ class _ProductoFormPageState extends State<ProductoFormPage> {
   late TextEditingController nombreController;
   late TextEditingController precioController;
   late TextEditingController stockController;
-  late TextEditingController unidadController;
   late TextEditingController categoriaController;
+  late TextEditingController cantidadPorUnidadController;
+
+  String unidadMedida = 'kg';
+
+  final List<String> unidadesDisponibles = const ['kg', 'unidad', 'caja'];
 
   @override
   void initState() {
     super.initState();
 
     nombreController = TextEditingController(
-      text: widget.producto?.nombre ?? "",
+      text: widget.producto?.nombre ?? '',
     );
 
     precioController = TextEditingController(
       text: widget.producto != null
           ? widget.producto!.precio.toStringAsFixed(0)
-          : "",
+          : '',
     );
 
     stockController = TextEditingController(
-      text: widget.producto?.stock.toString() ?? "",
-    );
-
-    unidadController = TextEditingController(
-      text: widget.producto?.unidad ?? "",
+      text: widget.producto?.stock.toString() ?? '',
     );
 
     categoriaController = TextEditingController(
-      text: widget.producto?.categoria ?? "",
+      text: widget.producto?.categoria ?? '',
     );
+
+    cantidadPorUnidadController = TextEditingController(
+      text: widget.producto?.cantidadPorUnidad.toString() ?? '1',
+    );
+
+    unidadMedida = widget.producto?.unidadMedida ?? widget.producto?.unidad ?? 'kg';
   }
 
   @override
@@ -57,30 +63,40 @@ class _ProductoFormPageState extends State<ProductoFormPage> {
     nombreController.dispose();
     precioController.dispose();
     stockController.dispose();
-    unidadController.dispose();
     categoriaController.dispose();
+    cantidadPorUnidadController.dispose();
     super.dispose();
   }
 
   Future<void> guardar() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final provider =
-    Provider.of<ProductosProvider>(context, listen: false);
+    final provider = Provider.of<ProductosProvider>(context, listen: false);
 
     final nombre = nombreController.text.trim();
     final precio =
-        double.tryParse(precioController.text.replaceAll(",", ".")) ?? 0;
+        double.tryParse(precioController.text.replaceAll(',', '.')) ?? 0;
     final stock = int.tryParse(stockController.text) ?? 0;
-    final unidad = unidadController.text.trim();
     final categoria = categoriaController.text.trim();
+    final cantidadPorUnidad =
+        double.tryParse(cantidadPorUnidadController.text.replaceAll(',', '.')) ??
+            0;
+
+    if (cantidadPorUnidad <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('La cantidad por unidad debe ser mayor a 0')),
+      );
+      return;
+    }
 
     if (widget.producto == null) {
       await provider.agregarProducto(
         nombre: nombre,
         precio: precio,
         stock: stock,
-        unidad: unidad,
+        unidad: unidadMedida,
+        unidadMedida: unidadMedida,
+        cantidadPorUnidad: cantidadPorUnidad,
         categoria: categoria,
       );
     } else {
@@ -89,7 +105,9 @@ class _ProductoFormPageState extends State<ProductoFormPage> {
         nombre: nombre,
         precio: precio,
         stock: stock,
-        unidad: unidad,
+        unidad: unidadMedida,
+        unidadMedida: unidadMedida,
+        cantidadPorUnidad: cantidadPorUnidad,
         categoria: categoria,
       );
     }
@@ -106,7 +124,7 @@ class _ProductoFormPageState extends State<ProductoFormPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          editando ? "Editar Producto" : "Nuevo Producto",
+          editando ? 'Editar Producto' : 'Nuevo Producto',
         ),
       ),
       body: Form(
@@ -117,12 +135,10 @@ class _ProductoFormPageState extends State<ProductoFormPage> {
             TextFormField(
               controller: nombreController,
               decoration: const InputDecoration(
-                labelText: "Nombre",
+                labelText: 'Nombre',
               ),
               validator: (v) =>
-              v == null || v.trim().isEmpty
-                  ? "Ingrese un nombre"
-                  : null,
+                  v == null || v.trim().isEmpty ? 'Ingrese un nombre' : null,
             ),
 
             const SizedBox(height: 15),
@@ -131,12 +147,9 @@ class _ProductoFormPageState extends State<ProductoFormPage> {
               controller: precioController,
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(
-                labelText: "Precio",
+                labelText: 'Precio',
               ),
-              validator: (v) =>
-              v == null || v.isEmpty
-                  ? "Ingrese un precio"
-                  : null,
+              validator: (v) => v == null || v.isEmpty ? 'Ingrese un precio' : null,
             ),
 
             const SizedBox(height: 15),
@@ -145,26 +158,49 @@ class _ProductoFormPageState extends State<ProductoFormPage> {
               controller: stockController,
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(
-                labelText: "Stock",
+                labelText: 'Stock',
               ),
-              validator: (v) =>
-              v == null || v.isEmpty
-                  ? "Ingrese el stock"
-                  : null,
+              validator: (v) => v == null || v.isEmpty ? 'Ingrese el stock' : null,
+            ),
+
+            const SizedBox(height: 15),
+
+            DropdownButtonFormField<String>(
+              value: unidadMedida,
+              decoration: const InputDecoration(
+                labelText: 'Unidad de medida',
+              ),
+              items: unidadesDisponibles
+                  .map(
+                    (unidad) => DropdownMenuItem(
+                      value: unidad,
+                      child: Text(unidad.toUpperCase()),
+                    ),
+                  )
+                  .toList(),
+              onChanged: (valor) {
+                setState(() {
+                  unidadMedida = valor ?? 'kg';
+                });
+              },
             ),
 
             const SizedBox(height: 15),
 
             TextFormField(
-              controller: unidadController,
+              controller: cantidadPorUnidadController,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
               decoration: const InputDecoration(
-                labelText: "Unidad",
-                hintText: "Caja, Bolsa, Kg...",
+                labelText: 'Cantidad por unidad de venta',
+                hintText: 'Ej: 1, 0.5, 2',
               ),
-              validator: (v) =>
-              v == null || v.trim().isEmpty
-                  ? "Ingrese la unidad"
-                  : null,
+              validator: (v) {
+                final cantidad = double.tryParse((v ?? '').replaceAll(',', '.'));
+                if (cantidad == null || cantidad <= 0) {
+                  return 'Ingrese una cantidad válida';
+                }
+                return null;
+              },
             ),
 
             const SizedBox(height: 15),
@@ -172,12 +208,10 @@ class _ProductoFormPageState extends State<ProductoFormPage> {
             TextFormField(
               controller: categoriaController,
               decoration: const InputDecoration(
-                labelText: "Categoría",
+                labelText: 'Categoría',
               ),
               validator: (v) =>
-              v == null || v.trim().isEmpty
-                  ? "Ingrese la categoría"
-                  : null,
+                  v == null || v.trim().isEmpty ? 'Ingrese la categoría' : null,
             ),
 
             const SizedBox(height: 30),
@@ -187,9 +221,7 @@ class _ProductoFormPageState extends State<ProductoFormPage> {
               child: ElevatedButton.icon(
                 icon: const Icon(Icons.save),
                 label: Text(
-                  editando
-                      ? "GUARDAR CAMBIOS"
-                      : "CREAR PRODUCTO",
+                  editando ? 'GUARDAR CAMBIOS' : 'CREAR PRODUCTO',
                 ),
                 onPressed: guardar,
               ),
