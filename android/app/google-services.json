@@ -12,7 +12,20 @@
           "package_name": "com.frescoya.frescoya"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "1037166961093-oc5qqkk580ll5poge3a8vjj5de9kbflc.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.frescoya.frescoya",
+            "certificate_hash": "5d262747c7f74a3b15c7120b8a06c711de3c4f4e"
+          }
+        },
+        {
+          "client_id": "1037166961093-kgr28dl9so95tlneak2ns2jq8f0mnbb3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDwMqyCiqR8nnyTMZYu0FAIABO2OF1rVhg"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1037166961093-kgr28dl9so95tlneak2ns2jq8f0mnbb3.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1037166961093-jkdpkm1rbh2avm1cg734rgjbsf9uc9kg.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.frescoya.frescoya"
+              }
+            }
+          ]
         }
       }
     }
